@@ -1,0 +1,81 @@
+% Exercise 15
+%%BoundingBox: 0 0 100 100
+%%BeginProlog
+/s 5.0 def
+%%EndProlog
+
+s s scale
+1 s div setlinewidth
+
+/a [84 48] def
+/b [40 48] def
+/c [48 68] def
+
+/scalarmul {
+3 dict begin % c [a b] on stack
+aload pop % c a b on stack
+/b exch def
+/a exch def
+/c exch def
+[c a mul c b mul]
+end } def
+
+/addvec {
+4 dict begin % [a b] [c d] on stack
+aload pop % c d on stack
+/d exch def
+/c exch def
+aload pop % a b on stack
+/b exch def
+/a exch def
+[c a add b d add]
+end } def
+
+
+% draw a triangle
+newpath
+a aload pop moveto
+0 0 rlineto
+b aload pop lineto
+0 0 rlineto
+c aload pop lineto
+0 0 rlineto
+closepath
+stroke
+
+% median coordinates
+/mab 0.5 a b addvec scalarmul def
+/mac 0.5 a c addvec scalarmul def
+/mbc 0.5 b c addvec scalarmul def
+/mabc 1 3 div a b c addvec addvec scalarmul def 
+% draw medians
+1 s div setlinewidth
+newpath a aload pop moveto mbc aload pop lineto closepath stroke
+newpath b aload pop moveto mac aload pop lineto closepath stroke
+newpath c aload pop moveto mab aload pop lineto closepath stroke
+
+% draw vertces dots
+1 setlinecap
+1 setlinewidth
+
+newpath a aload pop moveto 0 0 rlineto stroke
+newpath b aload pop moveto 0 0 rlineto stroke
+newpath c aload pop moveto 0 0 rlineto stroke
+
+newpath mab aload pop moveto 0 0 rlineto stroke
+newpath mac aload pop moveto 0 0 rlineto stroke
+newpath mbc aload pop moveto 0 0 rlineto stroke
+newpath mabc aload pop moveto 0 0 rlineto stroke
+
+% set signature
+/Helvetica findfont
+4 scalefont
+setfont
+
+newpath
+0 0 0 setrgbcolor
+40 40 moveto
+(Efimov Yuriy, exercise 15) show
+showpage
+%%EOF
+

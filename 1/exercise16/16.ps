@@ -1,0 +1,65 @@
+% Exercise 15
+%%BoundingBox: 0 0 100 100
+%%BeginProlog
+/s 5.0 def
+%%EndProlog
+
+s s scale
+1 s div setlinewidth
+
+/position [61 70] def
+/radius 20 def
+
+/dir {
+1 dict begin
+/ang exch def
+[ang cos ang sin]
+end } def
+
+/scalarmul {
+3 dict begin % c [a b] on stack
+aload pop % c a b on stack
+/b exch def
+/a exch def
+/c exch def
+[c a mul c b mul]
+end } def
+
+/addvec {
+4 dict begin % [a b] [c d] on stack
+aload pop % c d on stack
+/d exch def
+/c exch def
+aload pop % a b on stack
+/b exch def
+/a exch def
+[c a add b d add]
+end } def
+
+/p1 radius 0 dir scalarmul def
+/p2 radius 72 dir scalarmul def
+/p3 radius 144 dir scalarmul def
+/p4 radius 216 dir scalarmul def
+/p5 radius 288 dir scalarmul def
+
+% draw a pentagon
+newpath
+p1 position addvec aload pop moveto
+p2 position addvec aload pop lineto
+p3 position addvec aload pop lineto
+p4 position addvec aload pop lineto
+p5 position addvec aload pop lineto
+closepath
+stroke
+
+% set signature
+/Helvetica findfont
+4 scalefont
+setfont
+
+newpath
+0 0 0 setrgbcolor
+40 40 moveto
+(Efimov Yuriy, exercise 16) show
+showpage
+%%EOF

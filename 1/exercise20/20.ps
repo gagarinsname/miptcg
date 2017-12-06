@@ -1,0 +1,41 @@
+% Exercize 15
+%%BoundingBox: 0 0 100 100
+%%BeginProlog
+/s 5.0 def
+%%EndProlog
+
+s s scale
+1 s div setlinewidth
+
+/p1 [30 40] def
+/p2 [90 40] def
+/p3 [90 80] def
+/p4 [30 80] def
+/r 5 def
+
+% draw a curved rectangle
+newpath
+p1 aload pop exch r add exch moveto
+p2 aload pop exch r sub exch lineto
+p2 aload pop p3 aload pop r arct
+p3 aload pop r sub lineto
+p3 aload pop p4 aload pop r arct
+p4 aload pop exch r add exch lineto
+p4 aload pop p1 aload pop r arct
+p1 aload pop r add lineto
+p1 aload pop p2 aload pop r arct
+closepath
+stroke
+
+% set signature
+/Helvetica findfont
+4 scalefont
+setfont
+
+newpath
+0 0 0 setrgbcolor
+37 30 moveto
+(Efimov Yuriy, exercise 20) show
+showpage
+%%EOF
+
