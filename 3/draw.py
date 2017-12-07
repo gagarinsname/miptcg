@@ -22,6 +22,7 @@ rotateFactor = 0.05
 translateFactor = 0.05
 brightLightPosition4f = (0.0, 20.0, 100.0, 0)
 dimLightPosition4f = (-10, -10, -10, 0)
+initialPosition = matrices.Vector4d(0, 3, 10, 1)
 
 
 # Gets called by glutMainLoop() many times per second
@@ -103,10 +104,9 @@ def doCamera():
 
     orientationMatrix = cameraMatrix.copy()
     orientationMatrix[3] = matrices.Vector4d(0, 0, 0, 1)
-    pos = matrices.Vector4d(0, 3, 10, 1) * cameraMatrix
+    pos = initialPosition * cameraMatrix
     lookAt = matrices.Vector4d(0, 0, 0, 1) * cameraMatrix
     direction = matrices.Vector4d(0, 1, 0, 1) * orientationMatrix
-
     gluLookAt(*(pos.list()[:-1] + lookAt.list()[:-1] + direction.list()[:-1]))
 
 
@@ -118,7 +118,7 @@ def doRedraw():
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, (.25, .25, .25, 1.0))
+    # glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, (.25, .25, .25, 1.0))
     glMaterial(GL_FRONT, GL_SPECULAR, (1.0, 1.0, 1.0, .5))
     glMaterial(GL_FRONT, GL_SHININESS, (128.0, ))
 
@@ -134,15 +134,14 @@ def doRedraw():
         meshColor = (0.1, 0.7, 0.1)
         mesh.draw(meshColor)
     if args.silhouette:
-        position = brightLightPosition4f[:3]
-        mesh.draw_silhouette(position)
+        position = matrices.Vector4d(0, 3, 10, 1) * cameraMatrix
+        mesh.draw_silhouette(tuple(position[:-1]))
     if args.edges:
         edgeColor = (0.1, 0.5, 0.1)
         mesh.draw_edges(edgeColor)
 
-
+    
     glPopMatrix()
-
     glutSwapBuffers()  # Draws the new image to the screen if using double buffers
 
 
@@ -184,14 +183,10 @@ if __name__ == '__main__':
     BRIGHT4f = (1.0, 1.0, 1.0, 1.0)  # Color for Bright light
     DIM4f = (.2, .2, .2, 1.0)  # Color for Dim light
     if args.lighting:
-        glLightfv(GL_LIGHT0, GL_AMBIENT, BRIGHT4f)
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, BRIGHT4f)
+        # glLightfv(GL_LIGHT0, GL_AMBIENT, BRIGHT4f)
+        # glLightfv(GL_LIGHT0, GL_DIFFUSE, BRIGHT4f)
         glLightfv(GL_LIGHT0, GL_POSITION, brightLightPosition4f)
         glEnable(GL_LIGHT0)
-        glLightfv(GL_LIGHT1, GL_AMBIENT, DIM4f)
-        glLightfv(GL_LIGHT1, GL_DIFFUSE, DIM4f)
-        glLightfv(GL_LIGHT1, GL_POSITION, (-10, 10, -10, 0))
-        glEnable(GL_LIGHT1)
         glEnable(GL_LIGHTING)
 
     # Runs the GUI - never exits
