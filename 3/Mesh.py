@@ -133,7 +133,6 @@ class Mesh(object):
     def calculateNormals(self):
         nVerticesPerFace = len(self.faces[0].vertices())
 
-
         for faceIndex in range(len(self.faces)):
             face = self.faces[faceIndex]
             normal3f = calcNormal(*(vertex.coords() for vertex in (self.getVertex(i) for i in face.vertices()[:3])))
@@ -166,6 +165,9 @@ class Mesh(object):
         self.pointColor = [[0, 1, 1]] * 3 * nTriangles
 
     def draw(self, usedColor = (1.,1.,1.)):
+        # glCullFace(GL_BACK)
+        glColor3f(*usedColor)
+        # glPolygonMode(GL_FRONT, GL_TRIANGLES)
         mode = None
         for face in self.faces:
             numvertices = len(face.vertices())
@@ -194,7 +196,6 @@ class Mesh(object):
             for vertex in [self.getVertex(i) for i in face.vertices()]:
                 if vertex.hasNormal():
                     glNormal3f(*(vertex.getNormal()))
-                glColor3f(*usedColor)
                 glVertex3f(*(vertex.coords()))
 
             if mode == GL_POLYGON:
@@ -204,23 +205,66 @@ class Mesh(object):
         if mode:
             glEnd()
 
-    def draw_silhouette(self, lightPosition3f=(100,0,0), usedColor = (1.,0.,0.)):
+    def draw_silhouette(self, position3f, usedColor = (1., 0.5, 0.)):
         mode = GL_LINE_STRIP
-
+        # glPolygonMode(GL_FRONT, GL_LINE)
+        glCullFace(GL_BACK)
+        glScale(1.02, 1.02, 1.02)
+        glColor3f(*usedColor)
+        # print position3f
+        cPosition = np.array(position3f)
         for i in range(len(self.edges)):
             if len(self.edgeNormals[i]) == 6:
-                glBegin(mode)
-                glColor3f(*usedColor)
-                n1 = self.edgeNormals[i][:3]
-                n2 = self.edgeNormals[i][3:]
-
-                if dotProduct(n1, lightPosition3f)*dotProduct(n2, lightPosition3f) <= 0:
+                n1 = np.array(self.edgeNormals[i][:3])
+                n2 = np.array(self.edgeNormals[i][3:])
+                if np.dot(cPosition, n1) * np.dot(cPosition, n2) < 0:
+                    glBegin(mode)
                     i1 = list(self.edges[i])[0]
                     i2 = list(self.edges[i])[1]
+                    v1 = np.array(self.getVertex(i1).coords()) + 0 * np.array(position3f, dtype='g')
+                    v2 = np.array(self.getVertex(i2).coords()) + 0 * np.array(position3f, dtype='g')
+                    glVertex3f(*tuple(v1))
+                    glVertex3f(*tuple(v2))
+                    glEnd()
+        glColor3f(0.1, 0.1, 0.5)
+        mode = GL_TRIANGLES
+        mode = None
+        for face in self.faces:
+            numvertices = len(face.vertices())
 
-                    glVertex3f(*(self.getVertex(i1).coords()))
-                    glVertex3f(*(self.getVertex(i2).coords()))
+            if numvertices == 3 and mode != GL_TRIANGLES:
+                if mode:
+                    glEnd()
+                glBegin(GL_TRIANGLES)
+                mode = GL_TRIANGLES
+
+            elif numvertices == 4 and mode != GL_QUADS:
+                if mode:
+                    glEnd()
+                glBegin(GL_QUADS)
+                mode = GL_QUADS
+
+            elif numvertices > 4:
+                if mode:
+                    glEnd()
+                glBegin(GL_POLYGON)
+                mode = GL_POLYGON
+
+            elif numvertices < 3:
+                raise RuntimeError('Face has <3 vertices')
+
+            for vertex in [self.getVertex(i) for i in face.vertices()]:
+                if vertex.hasNormal():
+                    glNormal3f(*(vertex.getNormal()))
+                glVertex3f(*(vertex.coords()))
+
+            if mode == GL_POLYGON:
                 glEnd()
+                mode = None
+
+        if mode:
+            glEnd()
+
 
     def draw_edges(self, usedColor = (0.0, 0.0, 0.0)):
         mode = GL_LINE_STRIP
@@ -237,8 +281,8 @@ class Mesh(object):
 
 
 def calcNormal(v1, v2, v3):
-    a = np.array(v2, dtype='f') - np.array(v1, dtype='f')
-    b = np.array(v3, dtype='f') - np.array(v1, dtype='f')
+    a = np.array(v2, dtype='g') - np.array(v1, dtype='g')
+    b = np.array(v3, dtype='g') - np.array(v1, dtype='g')
     n = np.cross(a,b)
     norm2 = np.linalg.norm(n)
     n /= norm2
@@ -247,6 +291,6 @@ def calcNormal(v1, v2, v3):
 
 def dotProduct(a, b):
     if len(a) == len(b):
-        return np.dot(np.array(a), np.array(b))
+        return np.dot(np.array(a, dtype='g'), np.array(b, dtype='g'))
     else:
         return None

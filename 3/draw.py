@@ -2,6 +2,7 @@ import sys
 import os
 import importlib
 import matrices
+import numpy as np
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -18,7 +19,7 @@ global mesh
 mesh = None
 
 scaleFactor = 1.05
-rotateFactor = 0.05
+rotateFactor = 0.1
 translateFactor = 0.05
 brightLightPosition4f = (0.0, 20.0, 100.0, 0)
 dimLightPosition4f = (-10, -10, -10, 0)
@@ -92,7 +93,7 @@ def doReshape(width, height):
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     glViewport(0, 0, width, height)
-    gluPerspective(45.0, (float(width)) / height, .1, 100)
+    gluPerspective(90.0, (float(width)) / height, .1, 10)
 
     doCamera()
 
@@ -122,26 +123,38 @@ def doRedraw():
     glMaterial(GL_FRONT, GL_SPECULAR, (1.0, 1.0, 1.0, .5))
     glMaterial(GL_FRONT, GL_SHININESS, (128.0, ))
 
-    glMaterial(GL_BACK, GL_AMBIENT_AND_DIFFUSE, (0., 0., 0., 0.))
-    glMaterial(GL_FRONT, GL_SPECULAR, (0., 0., 0., 0.))
-    glMaterial(GL_FRONT, GL_SHININESS, (0.,))
+    # glMaterial(GL_BACK, GL_AMBIENT_AND_DIFFUSE, (0., 0., 0., 0.))
+    # glMaterial(GL_FRONT, GL_SPECULAR, (0., 0., 0., 0.))
+    # glMaterial(GL_FRONT, GL_SHININESS, (0.,))
 
-    glLineWidth(3.0)
-    glMatrixMode(GL_MODELVIEW)
-    glPushMatrix()
+
 
     if args.faces:
-        meshColor = (0.1, 0.7, 0.1)
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()
+        meshColor = (0.4, 0.8, 0.1)
         mesh.draw(meshColor)
+        # sColor = (1.0, 0, 0)
+        # mesh.draw2(sColor)
+        glPopMatrix()
     if args.silhouette:
-        position = matrices.Vector4d(0, 3, 10, 1) * cameraMatrix
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()
+        cm = np.array([cameraMatrix[i][j] for j in range(4) for i in range(4)]).reshape(4,4)[:3,:3]
+        print cm.shape
+        position =  initialPosition * cameraMatrix
+        print cm * np.array(initialPosition[:3]).reshape(-1,1), position[:-1]
+        glLineWidth(3.0)
         mesh.draw_silhouette(tuple(position[:-1]))
+        glPopMatrix()
     if args.edges:
         edgeColor = (0.1, 0.5, 0.1)
+        glLineWidth(3.0)
         mesh.draw_edges(edgeColor)
 
+
     
-    glPopMatrix()
+
     glutSwapBuffers()  # Draws the new image to the screen if using double buffers
 
 
@@ -168,6 +181,7 @@ if __name__ == '__main__':
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
     glutInitWindowSize(640, 480)
     glutCreateWindow("Simple OpenGL Renderer")
+    glEnable(GL_CULL_FACE)
     glEnable(GL_DEPTH_TEST)           # Ensure farthest polygons render first
     glEnable(GL_NORMALIZE)            # Prevents scale from affecting color
     glClearColor(0.1, 0.1, 0.5, 0.0)  # Color to apply for glClear()
