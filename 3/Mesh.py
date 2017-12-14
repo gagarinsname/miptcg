@@ -168,7 +168,6 @@ class Mesh(object):
     def draw(self, usedColor = (1.,1.,1.)):
         glCullFace(GL_BACK)
         glColor3f(*usedColor)
-        glScale(0.99, 0.99, 0.99)
         mode = None
         for face in self.faces:
             numvertices = len(face.vertices())
@@ -208,34 +207,35 @@ class Mesh(object):
 
     def draw_silhouette(self, position3f, drawFaces=False, usedColor = (0.1, 9.0, 0.0)):
         mode = GL_LINES
-        glLineWidth(5.0)
+        glLineWidth(10.0)
         glCullFace(GL_BACK)
         # glScale(1.02, 1.02, 1.02)
         glColor3f(*usedColor)
         cPosition = np.array(position3f)
 
-        # for i in range(len(self.edges)):
-        #     if len(self.edgeNormals[i]) == 6:
-        #         glBegin(mode)
-        #         n1 = np.array(self.edgeNormals[i][:3])
-        #         n2 = np.array(self.edgeNormals[i][3:])
-        #
-        #         i1 = list(self.edges[i])[0]
-        #         i2 = list(self.edges[i])[1]
-        #
-        #         v1 = np.array(self.getVertex(i1).coords())
-        #         v2 = np.array(self.getVertex(i2).coords())
-        #         if np.dot(cPosition, n1) * np.dot(cPosition, n2) < 0:
-        #
-        #             glVertex3f(*tuple(v1))
-        #             glVertex3f(*tuple(v2))
-        #         glEnd()
+        for i in range(len(self.edges)):
+            if len(self.edgeNormals[i]) == 6:
+                glBegin(mode)
+                n1 = np.array(self.edgeNormals[i][:3])
+                n2 = np.array(self.edgeNormals[i][3:])
 
-        if ~drawFaces:
-            glCullFace(GL_FRONT)
+                i1 = list(self.edges[i])[0]
+                i2 = list(self.edges[i])[1]
+
+                v1 = np.array(self.getVertex(i1).coords())
+                v2 = np.array(self.getVertex(i2).coords())
+                if np.dot(cPosition, n1) * np.dot(cPosition, n2) < 0:
+
+                    glVertex3f(*tuple(v1))
+                    glVertex3f(*tuple(v2))
+                glEnd()
+
+        if drawFaces:
+            glCullFace(GL_FRONT_AND_BACK)
             glLineWidth(0.5)
-            glScale(1.03, 1.1, 1)
-            glColor3f(0.6, 0.0, 0.0)
+            glScale(1, 1, 1.1)
+            glColor3f(0.1, 0.1, 0.5)
+            # glColor4f(0.1, 0.1, 0.5)
             mode = None
             for face in self.faces:
                 numvertices = len(face.vertices())
@@ -273,59 +273,59 @@ class Mesh(object):
             if mode:
                 glEnd()
 
-            glScale(0.98, 0.96, 0.98)
-            mode = None
-            for face in self.faces:
-                numvertices = len(face.vertices())
-
-                if numvertices == 3 and mode != GL_TRIANGLES:
-                    if mode:
-                        glEnd()
-                    glBegin(GL_TRIANGLES)
-                    mode = GL_TRIANGLES
-
-                elif numvertices == 4 and mode != GL_QUADS:
-                    if mode:
-                        glEnd()
-                    glBegin(GL_QUADS)
-                    mode = GL_QUADS
-
-                elif numvertices > 4:
-                    if mode:
-                        glEnd()
-                    glBegin(GL_POLYGON)
-                    mode = GL_POLYGON
-
-                elif numvertices < 3:
-                    raise RuntimeError('Face has <3 vertices')
-
-                for vertex in [self.getVertex(i) for i in face.vertices()]:
-                    if vertex.hasNormal():
-                        glNormal3f(*(vertex.getNormal()))
-                    glVertex3f(*(vertex.coords()))
-
-                if mode == GL_POLYGON:
-                    glEnd()
-                    mode = None
-
-            if mode:
-                glEnd()
+            # glScale(0.98, 0.96, 0.98)
+            # mode = None
+            # for face in self.faces:
+            #     numvertices = len(face.vertices())
+            #
+            #     if numvertices == 3 and mode != GL_TRIANGLES:
+            #         if mode:
+            #             glEnd()
+            #         glBegin(GL_TRIANGLES)
+            #         mode = GL_TRIANGLES
+            #
+            #     elif numvertices == 4 and mode != GL_QUADS:
+            #         if mode:
+            #             glEnd()
+            #         glBegin(GL_QUADS)
+            #         mode = GL_QUADS
+            #
+            #     elif numvertices > 4:
+            #         if mode:
+            #             glEnd()
+            #         glBegin(GL_POLYGON)
+            #         mode = GL_POLYGON
+            #
+            #     elif numvertices < 3:
+            #         raise RuntimeError('Face has <3 vertices')
+            #
+            #     for vertex in [self.getVertex(i) for i in face.vertices()]:
+            #         if vertex.hasNormal():
+            #             glNormal3f(*(vertex.getNormal()))
+            #         glVertex3f(*(vertex.coords()))
+            #
+            #     if mode == GL_POLYGON:
+            #         glEnd()
+            #         mode = None
+            #
+            # if mode:
+            #     glEnd()
 
         glCullFace(GL_BACK)
 
 
     def draw_edges(self, usedColor = (0.0, 0.0, 0.0)):
-        mode = GL_LINE_STRIP
+        glLineWidth(1.0)
+        mode = GL_LINES
+        glColor3f(*usedColor)
+        glBegin(mode)
         for face in self.faces:
             nVertices = len(face.vertices())
-            glBegin(mode)
-
             for vertex in [self.getVertex(i) for i in face.vertices()]:
-                glColor3f(*usedColor)
                 glVertex3f(*(vertex.coords()))
             glVertex3f(*(self.getVertex(face.vertices()[0]).coords()))
 
-            glEnd()
+        glEnd()
 
     def scale(self):
         massCenter = np.zeros(3)

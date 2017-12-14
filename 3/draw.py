@@ -19,11 +19,11 @@ global mesh
 mesh = None
 
 scaleFactor = 1.2
-rotateFactor = 0.2
+rotateFactor = 0.5
 translateFactor = 0.05
 brightLightPosition4f = (0.0, 20.0, 100.0, 0)
 dimLightPosition4f = (-10, -10, -10, 0)
-initialPosition = matrices.Vector4d(0, 3, 10, 1)
+initialPosition = matrices.Vector4d(0, 0, 10, 1)
 
 
 # Gets called by glutMainLoop() many times per second
@@ -93,7 +93,7 @@ def doReshape(width, height):
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     glViewport(0, 0, width, height)
-    gluPerspective(30.0, (float(width)) / height, .01, 100)
+    gluPerspective(10.0, (float(width)) / height, .01, 100)
 
     doCamera()
 
@@ -135,8 +135,8 @@ def doRedraw():
         orientationMatrix = cameraMatrix.copy()
         orientationMatrix[3] = matrices.Vector4d(0, 0, 0, 1)
         lookAt = matrices.Vector4d(0, 1, 0, 1) * orientationMatrix
-        position = position# + np.array(lookAt.list()[:-1])
-        mesh.draw_silhouette(position) # , ~args.faces)
+        position = position
+        mesh.draw_silhouette(position, ~args.faces)
         glPopMatrix()
     if args.edges:
         edgeColor = (0.1, 0.5, 0.1)
