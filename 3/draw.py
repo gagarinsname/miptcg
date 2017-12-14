@@ -18,8 +18,8 @@ import Mesh
 global mesh
 mesh = None
 
-scaleFactor = 1.05
-rotateFactor = 0.1
+scaleFactor = 1.2
+rotateFactor = 0.2
 translateFactor = 0.05
 brightLightPosition4f = (0.0, 20.0, 100.0, 0)
 dimLightPosition4f = (-10, -10, -10, 0)
@@ -93,7 +93,7 @@ def doReshape(width, height):
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     glViewport(0, 0, width, height)
-    gluPerspective(90.0, (float(width)) / height, .1, 10)
+    gluPerspective(30.0, (float(width)) / height, .01, 100)
 
     doCamera()
 
@@ -127,34 +127,27 @@ def doRedraw():
     # glMaterial(GL_FRONT, GL_SPECULAR, (0., 0., 0., 0.))
     # glMaterial(GL_FRONT, GL_SHININESS, (0.,))
 
-
-
-    if args.faces:
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        meshColor = (0.4, 0.8, 0.1)
-        mesh.draw(meshColor)
-        # sColor = (1.0, 0, 0)
-        # mesh.draw2(sColor)
-        glPopMatrix()
     if args.silhouette:
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
-        cm = np.array([cameraMatrix[i][j] for j in range(4) for i in range(4)]).reshape(4,4)[:3,:3]
-        print cm.shape
-        position =  initialPosition * cameraMatrix
-        print cm * np.array(initialPosition[:3]).reshape(-1,1), position[:-1]
-        glLineWidth(3.0)
-        mesh.draw_silhouette(tuple(position[:-1]))
+        mv = glGetDoublev(GL_MODELVIEW_MATRIX)
+        position = mv[:-1, 2]
+        orientationMatrix = cameraMatrix.copy()
+        orientationMatrix[3] = matrices.Vector4d(0, 0, 0, 1)
+        lookAt = matrices.Vector4d(0, 1, 0, 1) * orientationMatrix
+        position = position# + np.array(lookAt.list()[:-1])
+        mesh.draw_silhouette(position) # , ~args.faces)
         glPopMatrix()
     if args.edges:
         edgeColor = (0.1, 0.5, 0.1)
         glLineWidth(3.0)
         mesh.draw_edges(edgeColor)
-
-
-    
-
+    if args.faces:
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()
+        meshColor = (0.4, 0.5, 0.1)
+        mesh.draw(meshColor)
+        glPopMatrix()
     glutSwapBuffers()  # Draws the new image to the screen if using double buffers
 
 
@@ -175,6 +168,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     mesh = handlers[os.path.splitext(args.model)[1][1:]](args.model)
+    mesh.scale()
 
     # Basic initialization - the same for most apps
     glutInit([])
