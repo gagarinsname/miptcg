@@ -93,7 +93,7 @@ def doReshape(width, height):
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     glViewport(0, 0, width, height)
-    gluPerspective(10.0, (float(width)) / height, .01, 100)
+    gluPerspective(5.0, (float(width)) / height, .01, 1000)
 
     doCamera()
 

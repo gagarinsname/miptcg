@@ -231,9 +231,9 @@ class Mesh(object):
                 glEnd()
 
         if drawFaces:
-            glCullFace(GL_FRONT_AND_BACK)
+            # glCullFace(GL_FRONT)
             glLineWidth(0.5)
-            glScale(1, 1, 1.1)
+            # glScale(0.99,0.99,0.99)
             glColor3f(0.1, 0.1, 0.5)
             # glColor4f(0.1, 0.1, 0.5)
             mode = None
