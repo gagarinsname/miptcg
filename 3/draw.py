@@ -93,7 +93,7 @@ def doReshape(width, height):
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     glViewport(0, 0, width, height)
-    gluPerspective(5.0, (float(width)) / height, .01, 1000)
+    gluPerspective(10.0, (float(width)) / height, .1, 1000)
 
     doCamera()
 
@@ -119,35 +119,39 @@ def doRedraw():
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    # glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, (.25, .25, .25, 1.0))
+    glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, (.25, .25, .25, 1.0))
     glMaterial(GL_FRONT, GL_SPECULAR, (1.0, 1.0, 1.0, .5))
     glMaterial(GL_FRONT, GL_SHININESS, (128.0, ))
 
-    # glMaterial(GL_BACK, GL_AMBIENT_AND_DIFFUSE, (0., 0., 0., 0.))
-    # glMaterial(GL_FRONT, GL_SPECULAR, (0., 0., 0., 0.))
-    # glMaterial(GL_FRONT, GL_SHININESS, (0.,))
-
     if args.silhouette:
+        if args.lighting:
+            glDisable(GL_LIGHTING)
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
         mv = glGetDoublev(GL_MODELVIEW_MATRIX)
         position = mv[:-1, 2]
-        orientationMatrix = cameraMatrix.copy()
-        orientationMatrix[3] = matrices.Vector4d(0, 0, 0, 1)
-        lookAt = matrices.Vector4d(0, 1, 0, 1) * orientationMatrix
-        position = position
+
         mesh.draw_silhouette(position, ~args.faces)
         glPopMatrix()
+        if args.lighting:
+            glEnable(GL_LIGHTING)
+
     if args.edges:
+        if args.lighting:
+            glDisable(GL_LIGHTING)
         edgeColor = (0.1, 0.5, 0.1)
         glLineWidth(3.0)
         mesh.draw_edges(edgeColor)
+        if args.lighting:
+            glEnable(GL_LIGHTING)
+
     if args.faces:
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
-        meshColor = (0.4, 0.5, 0.1)
+        meshColor = (0.2, 0.2, 0.9)
         mesh.draw(meshColor)
         glPopMatrix()
+
     glutSwapBuffers()  # Draws the new image to the screen if using double buffers
 
 
@@ -164,7 +168,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--faces', action='store_true', help='Draw faces', default=False)
     parser.add_argument('-e', '--edges', action='store_true', help='Draw edges', default=False)
     parser.add_argument('-s', '--silhouette', action='store_true', help='Draw silhouette', default=False)
-    parser.add_argument('-l', '--lighting', action='store_true', help='Enable simple lighting', default=False)
+    parser.add_argument('-t', '--lighting', action='store_true', help='Enable simple lighting', default=False)
     args = parser.parse_args()
 
     mesh = handlers[os.path.splitext(args.model)[1][1:]](args.model)
@@ -191,8 +195,8 @@ if __name__ == '__main__':
     BRIGHT4f = (1.0, 1.0, 1.0, 1.0)  # Color for Bright light
     DIM4f = (.2, .2, .2, 1.0)  # Color for Dim light
     if args.lighting:
-        # glLightfv(GL_LIGHT0, GL_AMBIENT, BRIGHT4f)
-        # glLightfv(GL_LIGHT0, GL_DIFFUSE, BRIGHT4f)
+        glLightfv(GL_LIGHT0, GL_AMBIENT, BRIGHT4f)
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, BRIGHT4f)
         glLightfv(GL_LIGHT0, GL_POSITION, brightLightPosition4f)
         glEnable(GL_LIGHT0)
         glEnable(GL_LIGHTING)

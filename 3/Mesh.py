@@ -207,7 +207,7 @@ class Mesh(object):
 
     def draw_silhouette(self, position3f, drawFaces=False, usedColor = (0.1, 9.0, 0.0)):
         mode = GL_LINES
-        glLineWidth(10.0)
+        glLineWidth(5.0)
         glCullFace(GL_BACK)
         # glScale(1.02, 1.02, 1.02)
         glColor3f(*usedColor)
@@ -231,11 +231,10 @@ class Mesh(object):
                 glEnd()
 
         if drawFaces:
-            # glCullFace(GL_FRONT)
+            glCullFace(GL_FRONT)
             glLineWidth(0.5)
-            # glScale(0.99,0.99,0.99)
             glColor3f(0.1, 0.1, 0.5)
-            # glColor4f(0.1, 0.1, 0.5)
+
             mode = None
             for face in self.faces:
                 numvertices = len(face.vertices())
@@ -273,7 +272,6 @@ class Mesh(object):
             if mode:
                 glEnd()
 
-            # glScale(0.98, 0.96, 0.98)
             # mode = None
             # for face in self.faces:
             #     numvertices = len(face.vertices())
@@ -333,7 +331,6 @@ class Mesh(object):
         for i in range(nVertices):
             massCenter += np.array(self.getVertex(i).coords())
         massCenter /= nVertices
-        print(massCenter)
         for i in range(nVertices):
             cVertex = np.array(self.getVertex(i).coords())
             self.vertices[i].setX((cVertex[0] - massCenter[0]))
